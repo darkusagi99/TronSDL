@@ -5,6 +5,37 @@
 //Screen dimension constants
 const int SCREEN_WIDTH = 1280;
 const int SCREEN_HEIGHT = 720;
+int speed = 4;
+bool field [SCREEN_WIDTH][SCREEN_HEIGHT] = { 0 };
+
+// Struct for TRON Player
+struct player {
+	int x, y, dir;
+	SDL_Color color;
+
+	// Constructor
+	player(SDL_Color c) {
+		x = rand() % SCREEN_WIDTH;
+		y = rand() % SCREEN_HEIGHT;
+		color = c;
+		dir = rand() % 4;
+	}
+
+	void tick() {
+		if (dir == 0) y += 1;
+		if (dir == 1) x -= 1;
+		if (dir == 2) x += 1;
+		if (dir == 3) y -= 1;
+
+		// Allow to loop outside screen
+		if (x >= SCREEN_WIDTH) x = 0;
+		if (x < 0) x = SCREEN_WIDTH - 1;
+		if (y >= SCREEN_HEIGHT) y = 0;
+		if (y < 0) x = SCREEN_HEIGHT - 1;
+	
+	}
+
+};
 
 int main(int argc, char* args[])
 {
@@ -17,6 +48,9 @@ int main(int argc, char* args[])
 
 	//The surface contained by the window
 	SDL_Surface* screenSurface = NULL;
+
+	// Init players (1 - red, 2 green)
+	player p1({ 255, 0, 0 }), p2({ 0, 255, 0 });
 
 	//Initialize SDL
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
