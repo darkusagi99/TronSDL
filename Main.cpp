@@ -24,6 +24,7 @@ struct player {
 		y = rand() % SCREEN_HEIGHT;
 		color = c;
 		dir = rand() % 4;
+		active = 1;
 	}
 
 	void tick() {
@@ -44,6 +45,7 @@ struct player {
 		x = rand() % SCREEN_WIDTH;
 		y = rand() % SCREEN_HEIGHT;
 		dir = rand() % 4;
+		active = 1;
 	}
 
 };
@@ -80,6 +82,7 @@ int main(int argc, char* args[])
 			bool game = 1;
 			bool reset = 0;
 			int playernbr = 4;
+			int aliveplayers = 4;
 
 			//Fill the surface black at the beginning
 			//Get window surface
@@ -101,6 +104,7 @@ int main(int argc, char* args[])
 					game = 1;
 					SDL_FillRect(screenSurface, NULL, SDL_MapRGB(screenSurface->format, 0x00, 0x00, 0x00));
 					memset(*field, 0, sizeof(field));
+					aliveplayers = playernbr;
 
 					for (int p = 0; p < MAX_PLAYER; p++) {
 						players[p].reset();
@@ -203,34 +207,46 @@ int main(int argc, char* args[])
 
 					}
 
-					// End of game management
-					if (!game) continue;
+					// Game management (if)
+					// End of game management (else)
+					if (game) {
 
-					// Physical update
-					for (int i = 0; i < speed; i++) {
+						// Physical update + player DRAW
+						for (int i = 0; i < speed; i++) {
 
-						// player update
-						for (int u = 0; u < playernbr; u++) {
-							players[u].tick();
+							// player update
+							for (int u = 0; u < playernbr; u++) {
+								if (players[u].active == 1)
+								players[u].tick();
+							}
+
+							// Endgame check
+							aliveplayers = 0;
+							for (int u = 0; u < playernbr; u++) {
+
+								if (field[players[u].x][players[u].y] == 1) players[u].active = 0;
+								if (players[u].active == 1) aliveplayers++;
+							}
+							if (aliveplayers <= 1) game = 0;
+
+							// Update game field
+							for (int u = 0; u < playernbr; u++) {
+								if (players[u].active == 1)
+								field[players[u].x][players[u].y] = 1;
+							}
+
+							// Draw players
+							for (int u = 0; u < playernbr; u++) {
+								if (players[u].active == 1) {
+									SDL_Rect affp1 = { players[u].x, players[u].y, PLAYER_WIDTH, PLAYER_WIDTH };
+									SDL_FillRect(screenSurface, &affp1, players[u].color);
+								}
+
+							}
+
 						}
-
-						// Endgame check
-						for (int u = 0; u < playernbr; u++) {
-
-							if (field[players[u].x][players[u].y] == 1) game = 0;
-						}
-
-						// Update game field
-						for (int u = 0; u < playernbr; u++) {
-							field[players[u].x][players[u].y] = 1;
-						}
-
-						// Draw players
-						for (int u = 0; u < playernbr; u++) {
-							SDL_Rect affp1 = { players[u].x, players[u].y, PLAYER_WIDTH, PLAYER_WIDTH };
-							SDL_FillRect(screenSurface, &affp1, players[u].color);
-
-						}
+					} else {
+						// End of game
 
 					}
 
