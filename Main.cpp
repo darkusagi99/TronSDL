@@ -15,7 +15,7 @@ const int MAX_PLAYER = 4;
 
 // Struct for TRON Player
 struct player {
-	int x, y, dir;
+	int x, y, dir, active;
 	Uint32 color;
 
 	// Constructor
@@ -79,6 +79,7 @@ int main(int argc, char* args[])
 
 			bool game = 1;
 			bool reset = 0;
+			int playernbr = 4;
 
 			//Fill the surface black at the beginning
 			//Get window surface
@@ -170,6 +171,20 @@ int main(int argc, char* args[])
 								// Reset game
 								reset = 1;
 								break;
+
+							case SDLK_F1 :
+								playernbr = 1;
+								break;
+							case SDLK_F2:
+								playernbr = 2;
+								break;
+							case SDLK_F3:
+								playernbr = 3;
+								break;
+							case SDLK_F4:
+								playernbr = 4;
+								break;
+
 							default:
 								break;
 							}
@@ -195,23 +210,23 @@ int main(int argc, char* args[])
 					for (int i = 0; i < speed; i++) {
 
 						// player update
-						for (int u = 0; u < MAX_PLAYER; u++) {
+						for (int u = 0; u < playernbr; u++) {
 							players[u].tick();
 						}
 
 						// Endgame check
-						for (int u = 0; u < MAX_PLAYER; u++) {
+						for (int u = 0; u < playernbr; u++) {
 
 							if (field[players[u].x][players[u].y] == 1) game = 0;
 						}
 
 						// Update game field
-						for (int u = 0; u < MAX_PLAYER; u++) {
+						for (int u = 0; u < playernbr; u++) {
 							field[players[u].x][players[u].y] = 1;
 						}
 
 						// Draw players
-						for (int u = 0; u < MAX_PLAYER; u++) {
+						for (int u = 0; u < playernbr; u++) {
 							SDL_Rect affp1 = { players[u].x, players[u].y, PLAYER_WIDTH, PLAYER_WIDTH };
 							SDL_FillRect(screenSurface, &affp1, players[u].color);
 
