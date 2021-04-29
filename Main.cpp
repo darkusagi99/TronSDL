@@ -11,14 +11,15 @@ int speed = 4;
 bool field [SCREEN_WIDTH][SCREEN_HEIGHT] = { 0 };
 const int PLAYER_WIDTH = 3;
 int a, b, delta;
+const int MAX_PLAYER = 4;
 
 // Struct for TRON Player
 struct player {
 	int x, y, dir;
-	SDL_Color color;
+	Uint32 color;
 
 	// Constructor
-	player(SDL_Color c) {
+	player(Uint32 c) {
 		x = rand() % SCREEN_WIDTH;
 		y = rand() % SCREEN_HEIGHT;
 		color = c;
@@ -59,8 +60,6 @@ int main(int argc, char* args[])
 	//The surface contained by the window
 	SDL_Surface* screenSurface = NULL;
 
-	// Init players (1 - red, 2 green)
-	player p1({ 255, 0, 0 }), p2({ 0, 255, 0 });
 
 	//Initialize SDL
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
@@ -81,11 +80,16 @@ int main(int argc, char* args[])
 			bool game = 1;
 			bool reset = 0;
 
-
 			//Fill the surface black at the beginning
 			//Get window surface
 			screenSurface = SDL_GetWindowSurface(window);
 			SDL_FillRect(screenSurface, NULL, SDL_MapRGB(screenSurface->format, 0x00, 0x00, 0x00));
+
+			// Init players (1 - red, 2 green, 3 blue, 4 yellow)
+			player players[MAX_PLAYER] = { player(SDL_MapRGB(screenSurface->format, 0x255, 0x00, 0x00)),
+										player(SDL_MapRGB(screenSurface->format, 0x00, 0x255, 0x00)),
+										player(SDL_MapRGB(screenSurface->format, 0x00, 0x00, 0x255)),
+										player(SDL_MapRGB(screenSurface->format, 0x255, 0x255, 0x00)) };
 
 			/* Loop until an SDL_QUIT event is found */
 			while (!quit) {
@@ -96,8 +100,10 @@ int main(int argc, char* args[])
 					game = 1;
 					SDL_FillRect(screenSurface, NULL, SDL_MapRGB(screenSurface->format, 0x00, 0x00, 0x00));
 					memset(*field, 0, sizeof(field));
-					p1.reset();
-					p2.reset();
+
+					for (int p = 0; p < MAX_PLAYER; p++) {
+						players[p].reset();
+					}
 				
 					// Reset the reset flag
 					reset = 0;
@@ -123,19 +129,38 @@ int main(int argc, char* args[])
 							switch (event.key.keysym.sym) {
 							case SDLK_LEFT:
 								// Player 2 LEFT
-								p2.dir = (p2.dir + 1) % 4;
+								players[1].dir = (players[1].dir + 1) % 4;
 								break;
 							case SDLK_RIGHT:
 								// Player 2 RIGHT
-								p2.dir = (p2.dir + 3) % 4;
+								players[1].dir = (players[1].dir + 3) % 4;
 								break;
 							case SDLK_x:
 								// Player 1 LEFT
-								p1.dir = (p1.dir + 1) % 4;
+								players[0].dir = (players[0].dir + 1) % 4;
 								break;
 							case SDLK_c:
 								// Player 1 RIGHT
-								p1.dir = (p1.dir + 3) % 4;
+								players[0].dir = (players[0].dir + 3) % 4;
+								break;
+
+							case SDLK_a:
+								// Player 3 LEFT
+								players[2].dir = (players[2].dir + 1) % 4;
+								break;
+							case SDLK_q:
+								// Player 3 RIGHT
+								players[2].dir = (players[2].dir + 3) % 4;
+								break;
+
+
+							case SDLK_KP_6:
+								// Player 4 LEFT
+								players[3].dir = (players[3].dir + 1) % 4;
+								break;
+							case SDLK_KP_9:
+								// Player 4 RIGHT
+								players[3].dir = (players[3].dir + 3) % 4;
 								break;
 							case SDLK_ESCAPE:
 								// Exit game
@@ -151,26 +176,8 @@ int main(int argc, char* args[])
 
 
 							break;
-							/* Lorsque la touche est relachée, on annule le mouvement */
-						case SDL_KEYUP:
 
-							/* Touche appuyée, changement de statut */
-							switch (event.key.keysym.sym) {
-							case SDLK_LEFT:
-								break;
-							case SDLK_RIGHT:
-								break;
-							case SDLK_x:
-								break;
-							case SDLK_c:
-								break;
-							default:
-								break;
-							}
-
-							break;
-
-							/* SDL_QUIT event (window close) */
+						/* SDL_QUIT event (window close) */
 						case SDL_QUIT:
 							quit = 1;
 							break;
@@ -188,24 +195,27 @@ int main(int argc, char* args[])
 					for (int i = 0; i < speed; i++) {
 
 						// player update
-						p1.tick();
-						p2.tick();
+						for (int u = 0; u < MAX_PLAYER; u++) {
+							players[u].tick();
+						}
 
 						// Endgame check
-						if (field[p1.x][p1.y] == 1) game = 0;
-						if (field[p2.x][p2.y] == 1) game = 0;
+						for (int u = 0; u < MAX_PLAYER; u++) {
+
+							if (field[players[u].x][players[u].y] == 1) game = 0;
+						}
 
 						// Update game field
-						field[p1.x][p1.y] = 1;
-						field[p2.x][p2.y] = 1;
+						for (int u = 0; u < MAX_PLAYER; u++) {
+							field[players[u].x][players[u].y] = 1;
+						}
 
 						// Draw players
-						SDL_Rect affp1 = { p1.x, p1.y, PLAYER_WIDTH, PLAYER_WIDTH };
-						SDL_FillRect(screenSurface, &affp1, SDL_MapRGB(screenSurface->format, 0x255, 0x00, 0x00));
+						for (int u = 0; u < MAX_PLAYER; u++) {
+							SDL_Rect affp1 = { players[u].x, players[u].y, PLAYER_WIDTH, PLAYER_WIDTH };
+							SDL_FillRect(screenSurface, &affp1, players[u].color);
 
-
-						SDL_Rect affp2 = { p2.x, p2.y, PLAYER_WIDTH, PLAYER_WIDTH };
-						SDL_FillRect(screenSurface, &affp2, SDL_MapRGB(screenSurface->format, 0x00, 0x255, 0x00));
+						}
 
 					}
 
