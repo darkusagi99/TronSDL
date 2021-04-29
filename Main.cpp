@@ -2,6 +2,7 @@
 #include <SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 //Screen dimension constants
 const int SCREEN_WIDTH = 1280;
@@ -38,6 +39,12 @@ struct player {
 	
 	}
 
+	void reset() {
+		x = rand() % SCREEN_WIDTH;
+		y = rand() % SCREEN_HEIGHT;
+		dir = rand() % 4;
+	}
+
 };
 
 int main(int argc, char* args[])
@@ -72,6 +79,7 @@ int main(int argc, char* args[])
 		{
 
 			bool game = 1;
+			bool reset = 0;
 
 
 			//Fill the surface black at the beginning
@@ -81,6 +89,19 @@ int main(int argc, char* args[])
 
 			/* Loop until an SDL_QUIT event is found */
 			while (!quit) {
+
+				// reset game when needed
+				if (reset) {
+
+					game = 1;
+					SDL_FillRect(screenSurface, NULL, SDL_MapRGB(screenSurface->format, 0x00, 0x00, 0x00));
+					memset(*field, 0, sizeof(field));
+					p1.reset();
+					p2.reset();
+				
+					// Reset the reset flag
+					reset = 0;
+				}
 
 				// Capping to 60 FPS
 				a = SDL_GetTicks();
@@ -117,7 +138,12 @@ int main(int argc, char* args[])
 								p1.dir = (p1.dir + 3) % 4;
 								break;
 							case SDLK_ESCAPE:
+								// Exit game
 								quit = 1;
+								break;
+							case SDLK_r:
+								// Reset game
+								reset = 1;
 								break;
 							default:
 								break;
