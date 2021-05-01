@@ -16,17 +16,25 @@ const int MAX_PLAYER = 4;
 bool fullscreen = 0;
 bool victoryDisplayed = 0;
 char victoryString[256];
+SDL_Color whiteColor = { 0x255, 0x255, 0x255 };
+SDL_Color blackColor = { 0x00, 0x00, 0x00 };
+SDL_Color blueColor = { 0x00, 0x00, 0x255 };
+SDL_Color redColor = { 0x255, 0x00, 0x00 };
+SDL_Color greenColor = { 0x00, 0x255, 0x00 };
+SDL_Color yellowColor = { 0x255, 0x255, 0x00 };
 
 // Struct for TRON Player
 struct player {
 	int x, y, dir, active;
 	Uint32 color;
+	SDL_Color sdlColor;
 
 	// Constructor
-	player(Uint32 c) {
+	player(SDL_Color c, SDL_PixelFormat* format) {
 		x = rand() % SCREEN_WIDTH;
 		y = rand() % SCREEN_HEIGHT;
-		color = c;
+		sdlColor = c;
+		color = SDL_MapRGB(format, c.r, c.g, c.b);
 		dir = rand() % 4;
 		active = 1;
 	}
@@ -121,10 +129,10 @@ int main(int argc, char* args[])
 			SDL_FillRect(screenSurface, NULL, SDL_MapRGB(screenSurface->format, 0x00, 0x00, 0x00));
 
 			// Init players (1 - red, 2 green, 3 blue, 4 yellow)
-			player players[MAX_PLAYER] = { player(SDL_MapRGB(screenSurface->format, 0x255, 0x00, 0x00)),
-										player(SDL_MapRGB(screenSurface->format, 0x00, 0x255, 0x00)),
-										player(SDL_MapRGB(screenSurface->format, 0x00, 0x00, 0x255)),
-										player(SDL_MapRGB(screenSurface->format, 0x255, 0x255, 0x00)) };
+			player players[MAX_PLAYER] = { player(redColor, screenSurface->format),
+										player(greenColor,  screenSurface->format),
+										player(blueColor, screenSurface->format),
+										player(yellowColor, screenSurface->format)};
 
 			/* Loop until an SDL_QUIT event is found */
 			while (!quit) {
@@ -305,15 +313,16 @@ int main(int argc, char* args[])
 
 							if(winner == 99) {
 								snprintf(victoryString, 256, "Match nul");
+								// prépatation du texte
+								victoryText = TTF_RenderText_Blended(police, victoryString, whiteColor);
 							}
 							else {
 								snprintf(victoryString, 256, "Joueur %d gagne", winner + 1);
-
+								// préparation du texte
+								victoryText = TTF_RenderText_Blended(police, victoryString, players[winner].sdlColor);
 							}
 
 							// Affichage du texte
-							victoryText = TTF_RenderText_Blended(police, victoryString, SDL_Color({ 255, 0, 0 }));
-
 							textPosition.x = 180;
 							textPosition.y = 210;
 							SDL_BlitSurface(victoryText, NULL, screenSurface, &textPosition); /* Blit du texte */
@@ -321,18 +330,13 @@ int main(int argc, char* args[])
 							victoryDisplayed = 1;
 
 						}
-
-
 					}
-
-
 
 					//Update the surface
 					SDL_UpdateWindowSurface(window);
 
 				}
 			}
-
 		}
 	}
 
