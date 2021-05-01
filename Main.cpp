@@ -110,7 +110,7 @@ int main(int argc, char* args[])
 	else
 	{
 		//Create window
-		window = SDL_CreateWindow("TRON", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+		window = SDL_CreateWindow("TRON", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN_DESKTOP);
 		if (window == NULL)
 		{
 			printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
@@ -230,20 +230,7 @@ int main(int argc, char* args[])
 							case SDLK_F4:
 								playernbr = 4;
 								break;
-
-
-							/*case SDLK_F12:
-								if (fullscreen) {
-									SDL_SetWindowFullscreen(window, 0);
-									SDL_SetWindowSize(window, SCREEN_WIDTH, SCREEN_HEIGHT);
-									screenSurface = SDL_GetWindowSurface(window);
-								}
-								else {
-									SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
-									screenSurface = SDL_GetWindowSurface(window);
-								}
-								break;
-								*/
+								
 							default:
 								break;
 							}
@@ -294,6 +281,7 @@ int main(int argc, char* args[])
 							for (int u = 0; u < playernbr; u++) {
 								if (players[u].active == 1) {
 									SDL_Rect affp1 = { players[u].x, players[u].y, PLAYER_WIDTH, PLAYER_WIDTH };
+
 									SDL_FillRect(screenSurface, &affp1, players[u].color);
 								}
 
@@ -352,3 +340,4 @@ int main(int argc, char* args[])
 
 	return 0;
 }
+
