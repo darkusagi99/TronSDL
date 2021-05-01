@@ -19,4 +19,12 @@
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Font Include="..\..\..\..\..\Windows\Fonts\COMIC.TTF">
+      <Filter>Fichiers de ressources</Filter>
+    </Font>
+    <Font Include="comic.ttf">
+      <Filter>Fichiers sources</Filter>
+    </Font>
+  </ItemGroup>
 </Project>

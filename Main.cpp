@@ -1,5 +1,6 @@
 //Using SDL and standard IO
 #include <SDL.h>
+#include <SDL_ttf.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,8 +11,11 @@ const int SCREEN_HEIGHT = 720;
 int speed = 4;
 bool field [SCREEN_WIDTH][SCREEN_HEIGHT] = { 0 };
 const int PLAYER_WIDTH = 3;
-int a, b, delta;
+int a, b, delta, winner;
 const int MAX_PLAYER = 4;
+bool fullscreen = 0;
+bool victoryDisplayed = 0;
+char victoryString[256];
 
 // Struct for TRON Player
 struct player {
@@ -50,6 +54,16 @@ struct player {
 
 };
 
+// Toggle to Fullscreen
+void ToggleFullscreen(SDL_Window* Window) {
+
+	Uint32 FullscreenFlag = SDL_WINDOW_FULLSCREEN;
+	bool IsFullscreen = SDL_GetWindowFlags(Window) & FullscreenFlag;
+	SDL_SetWindowFullscreen(Window, IsFullscreen ? 0 : FullscreenFlag);
+	SDL_ShowCursor(IsFullscreen);
+
+}
+
 int main(int argc, char* args[])
 {
 	//The window we'll be rendering to
@@ -61,6 +75,23 @@ int main(int argc, char* args[])
 
 	//The surface contained by the window
 	SDL_Surface* screenSurface = NULL;
+
+	// Rect for text
+	SDL_Rect textPosition;
+	SDL_Surface* victoryText;
+
+	// Font for TTF
+	TTF_Font* police = NULL;
+
+	// Initialize TTF
+	if (TTF_Init() == -1)
+	{
+		fprintf(stderr, "Erreur d'initialisation de TTF_Init : %s\n", TTF_GetError());
+		exit(EXIT_FAILURE);
+	}
+
+	// Load font
+	police = TTF_OpenFont("comic.ttf", 65);
 
 
 	//Initialize SDL
@@ -109,6 +140,9 @@ int main(int argc, char* args[])
 					for (int p = 0; p < MAX_PLAYER; p++) {
 						players[p].reset();
 					}
+
+					// reset victory text
+					victoryDisplayed = 0;
 				
 					// Reset the reset flag
 					reset = 0;
@@ -189,6 +223,19 @@ int main(int argc, char* args[])
 								playernbr = 4;
 								break;
 
+
+							/*case SDLK_F12:
+								if (fullscreen) {
+									SDL_SetWindowFullscreen(window, 0);
+									SDL_SetWindowSize(window, SCREEN_WIDTH, SCREEN_HEIGHT);
+									screenSurface = SDL_GetWindowSurface(window);
+								}
+								else {
+									SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+									screenSurface = SDL_GetWindowSurface(window);
+								}
+								break;
+								*/
 							default:
 								break;
 							}
@@ -247,6 +294,34 @@ int main(int argc, char* args[])
 						}
 					} else {
 						// End of game
+						if (!victoryDisplayed) {
+
+							// Recherche du gagnant
+							winner = 99;
+							for (int u = 0; u < playernbr; u++) {
+								if (players[u].active == 1)
+									winner = u;
+							}
+
+							if(winner == 99) {
+								snprintf(victoryString, 256, "Match nul");
+							}
+							else {
+								snprintf(victoryString, 256, "Joueur %d gagne", winner + 1);
+
+							}
+
+							// Affichage du texte
+							victoryText = TTF_RenderText_Blended(police, victoryString, SDL_Color({ 255, 0, 0 }));
+
+							textPosition.x = 180;
+							textPosition.y = 210;
+							SDL_BlitSurface(victoryText, NULL, screenSurface, &textPosition); /* Blit du texte */
+
+							victoryDisplayed = 1;
+
+						}
+
 
 					}
 
@@ -266,6 +341,10 @@ int main(int argc, char* args[])
 
 	//Quit SDL subsystems
 	SDL_Quit();
+
+	// Close font and Quit TTF
+	TTF_CloseFont(police);
+	TTF_Quit();
 
 	return 0;
 }
